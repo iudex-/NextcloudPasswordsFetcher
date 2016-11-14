@@ -1,5 +1,5 @@
-count=0;
 
+var API_PATH = "/index.php/apps/passwords/api/0.1/passwords";
 var SERVER, USER, PASSWORD;
 var data;
 
@@ -7,7 +7,7 @@ if(PASSWORD==undefined) {
 	chrome.browserAction.setPopup({popup: "popup.html"});
 }
 
-chrome.browserAction.onClicked.addListener(function(tab) {
+chrome.browserAction.onClicked.addListener(function() {
 	if(SERVER){
 		if(data==undefined){
 			loadData(action);
@@ -32,8 +32,10 @@ function indicatorAction() {
 		if(data!=undefined) {
 			url=url.split("/")[2];
 			if(data[url]) {
+				chrome.browserAction.setPopup({popup: ""});
 				chrome.browserAction.setIcon({path: "icons/icon-green-32.png"});
 			} else {
+				chrome.browserAction.setPopup({popup: "popup-add.html"});
 				chrome.browserAction.setIcon({path: "icons/icon-32.png"});
 			}
 		}
@@ -80,18 +82,63 @@ function setPopupData(server,username,password) { // calles from popup.js
 		}
 	});
 }
+function addAcc(website,username, pw) {
+	addAcc_(website, username, pw, 0);
+}
+function addAcc_(website, username, pw, parse_error_counter){
+	var website_filtered = website.split("/")[2];
+	console.log("addAcc called", website_filtered, username);
+	data[website_filtered] = [username, pw];
+    indicatorAction();
+	console.log("POST fetching...");
+    fetch(SERVER+API_PATH, {
+        credentials: 'omit', // this is the default value
+        cache: 'no-store',
+        method: 'POST',
+        headers: {
+	        "Content-Type": "application/json",
+            "Authorization": "Basic "+btoa(USER+":"+PASSWORD)
+        },
+        body: 	"{\"website\":\""+website_filtered+"\"," +
+				"\"pass\":\""+pw+"\"," +
+				"\"loginname\":\""+username+"\"," +
+				"\"address\": \""+website+"\"," +
+				"\"notes\": \"\"}"
+    }).then(function(res) {
+        console.log("POST request ok?", res.ok);
+        if (!res.ok) {
+            throw Error(res.statusText);
+        } else {
+	        //console.log(res);
+	        res.json().then(function(resJson) {
+				console.log(resJson);
+	        }).catch(function(error) {
+		        console.log("parse error 2", error);
+		        if(parse_error_counter<30) {
+			        parse_error_counter++;
+		            addAcc_(website,username,pw,parse_error_counter);
+		        }
+	        });
+        }
+    }).catch(function(error) {
+        console.log("Network error", error);
+    });
+}
 
-function loadData(cb){
+function loadData(cb) {
+	loadData_(cb, 0);
+}
+function loadData_(cb, parse_error_count){
 	if(SERVER) {
-		console.log("fetching...");
-		fetch(SERVER+"/index.php/apps/passwords/api/0.1/passwords", {
+		console.log("GET fetching...");
+		fetch(SERVER+API_PATH, {
 			credentials: 'omit', // this is the default value
 			cache: 'no-store',
 			headers: {
 				Authorization: "Basic "+btoa(USER+":"+PASSWORD)
 			}
 		}).then(function(res) {
-			console.log("request ok?", res.ok);
+			console.log("GET request ok?", res.ok);
 			if (!res.ok) {
 				throw Error(res.statusText);
 			} else {
@@ -100,9 +147,15 @@ function loadData(cb){
 					data = data.filter(function(ele){return ele.deleted=="0"});
 					console.log(data);
 					data = processData(data);
-					if(cb!=undefined) cb();
+					if(cb!=undefined) {
+						cb();
+					}
 				}).catch(function(error) {
 					console.log("parse error 1", error);
+					if(parse_error_count<20) {
+						parse_error_count++;
+						loadData_(cb, parse_error_count);
+					}
 				});
 			}
 			return res;
@@ -116,15 +169,15 @@ function loadData(cb){
 }
 
 function processData(input){
-	out = {};
+	var out = {};
 	input.forEach(function(x){
 		if(x.properties){
-			prop={};
+			var prop={};
 			try{
 				prop=JSON.parse("{" + x.properties.split(', "notes')[0] + "}")
 			} catch(e){console.log("exception", e)}
 			
-			url="";
+			var url="";
 			try{
 				url=prop["address"].split("/");
 				if(url.length>1) {
@@ -144,26 +197,13 @@ function processData(input){
 }
 
 function getInsertCode(user,pw){
-	UsernameSelectors = "input[name=id], input[name=lid], input[name=username], input[name=Username], input[name=userName],	\
+	var UsernameSelectors = "input[name=id], input[name=lid], input[name=username], input[name=Username], input[name=userName],	\
 						 input[name=user], input[name=email], input[name=Email], input[name=eMail], input[name=acct],		\
 						 input[type=text], input[type=email], input[name=acc], input[name=login][type=text]";
 
 	return "document.querySelector('body').style.backgroundColor='#cfc';									\
 			document.querySelectorAll('"+UsernameSelectors+"').forEach(function(x){x.value='"+user+"'});	\
 			document.querySelectorAll('input[type=password]').forEach(function(x){x.value='"+pw+"'});";
-
-
-	return "document.querySelector('body').style.backgroundColor='#cfc';							\
-			var matchUser = ['input[name=id]', 'input[name=username]', 'input[type=email]',			\
-							 'input[name=acct]', 'input[name=login]' ];\
-			for(i=0;i<matchUser.length;i++){														\
-				matched = document.querySelectorAll(matchUser[i]);									\
-				if(matched!=[]) {																	\
-					console.log(matched);															\
-					matched.forEach(function(x){x.value='"+user+"'});								\
-				}																					\
-			}																						\
-			document.querySelectorAll('input[type=password]').forEach(function(x){x.value='"+pw+"'})";
 }
 /*
 var user = "hans";
@@ -203,7 +243,7 @@ document.querySelector("input[type=submit]").click()
 */
 
 
-function getCurrentTabUrl(callback) {
+function getCurrentTabUrl(callback) { // from Chromes tutorial extension
   // Query filter to be passed to chrome.tabs.query - see
   // https://developer.chrome.com/extensions/tabs#method-query
   var queryInfo = {

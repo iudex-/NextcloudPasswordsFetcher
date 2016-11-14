@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+<head>
+<title>Getting Started Extension's Popup</title>
+<style>
+body {
+	font-family: "Segoe UI", "Lucida Grande", Tahoma, sans-serif;
+	font-size: 100%;
+}
+input {
+	padding: 2px;
+	margin: 5px;
+}
+</style>
+
+</head>
+<body>
+	add account
+	<form id="form">
+		<input tabindex="4" required="required" name="website" type="text" placeholder="website">
+		<input tabindex="1" required="required" name="username" type="text" placeholder="username" autofocus="autofocus">
+		<input tabindex="2" required="required" name="password" type="password" placeholder="password" >
+		<input tabindex="3" name="send" type="submit">
+	</form>
+</body>
+<script src="popup-add.js"></script>
+</html>
+
