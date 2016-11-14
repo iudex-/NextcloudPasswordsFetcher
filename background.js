@@ -2,6 +2,7 @@
 var API_PATH = "/index.php/apps/passwords/api/0.1/passwords";
 var SERVER, USER, PASSWORD;
 var data;
+var count;
 
 if(PASSWORD==undefined) {
 	chrome.browserAction.setPopup({popup: "popup.html"});
