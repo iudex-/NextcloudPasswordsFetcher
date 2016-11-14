@@ -32,9 +32,9 @@ function indicatorAction() {
 		if(data!=undefined) {
 			url=url.split("/")[2];
 			if(data[url]) {
-				chrome.browserAction.setIcon({path: "icon-green-32.png"});
+				chrome.browserAction.setIcon({path: "icons/icon-green-32.png"});
 			} else {
-				chrome.browserAction.setIcon({path: "icon-32.png"});
+				chrome.browserAction.setIcon({path: "icons/icon-32.png"});
 			}
 		}
 	});
@@ -61,9 +61,9 @@ function action(){
 	//chrome.browserAction.setBadgeBackgroundColor({color: [r(0,255),r(0,255),r(0,255),255]});
 }
 
-function r(min,max){return Math.floor((Math.random() * max) + min) };
+function r(min,max){return Math.floor((Math.random() * max) + min) }
 
-function setPopupData(server,username,password) {
+function setPopupData(server,username,password) { // calles from popup.js
 	SERVER = server;
 	USER = username;
 	PASSWORD = password;
@@ -76,7 +76,7 @@ function setPopupData(server,username,password) {
 			indicatorAction();
 			//action();
 		} else {
-			chrome.browserAction.setIcon({path: "icon-red-32.png"});
+			chrome.browserAction.setIcon({path: "icons/icon-red-32.png"});
 		}
 	});
 }
@@ -88,7 +88,7 @@ function loadData(cb){
 			credentials: 'omit', // this is the default value
 			cache: 'no-store',
 			headers: {
-				Authorization: "Basic "+btoa(USER+":"+PASSWORD),
+				Authorization: "Basic "+btoa(USER+":"+PASSWORD)
 			}
 		}).then(function(res) {
 			console.log("request ok?", res.ok);
@@ -97,7 +97,7 @@ function loadData(cb){
 			} else {
 				res.json().then(function(resJson) {
 					data = resJson.filter(function(ele){return ele.creation_date!=null});
-					data = resJson.filter(function(ele){return ele.deleted=="0"});
+					data = data.filter(function(ele){return ele.deleted=="0"});
 					console.log(data);
 					data = processData(data);
 					if(cb!=undefined) cb();
@@ -108,7 +108,7 @@ function loadData(cb){
 			return res;
 		}).catch(function(error) {
 			console.log("Network/Auth error", error);
-			chrome.browserAction.setIcon({path: "icon-red-32.png"});
+			chrome.browserAction.setIcon({path: "icons/icon-red-32.png"});
 		});
 	} else {
 		console.warn("loadData without SERVER set");
