@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+<head>
+<title>Getting Started Extension's Popup</title>
+<style>
+body {
+	font-family: "Segoe UI", "Lucida Grande", Tahoma, sans-serif;
+	font-size: 100%;
+}
+input {
+	padding: 2px;
+	margin: 5px;
+}
+</style>
+
+</head>
+<body>
+	nextcloud passwords
+	<form id="form">
+	<input tabindex="1" required="required" name="server" type="url" placeholder="nextcloud server">
+	<input tabindex="2" required="required" name="username" type="text" placeholder="nextcloud username">
+	<input tabindex="3" required="required" name="password" type="password" placeholder="nextcloud password" autofocus="autofocus">
+	<input tabindex="4" name="send" type="submit">
+	</form>
+</body>
+<script src="popup.js"></script>
+</html>
+
