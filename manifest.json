@@ -2,19 +2,20 @@
   "manifest_version": 2,
 
   "name": "NextcloudPasswordsFetcher",
-  "description":  "This extension can fetch passwords from your Nextcloud/Owncloud and insert them directly into logins form. \r\n Requires the Passwords plugin (https://github.com/fcturner/passwords) to be installed in our Nexcloud/Owncloud",
+
+  "description":  "This extension can fetch passwords from your Nextcloud/Owncloud and insert them directly into logins form.",
   "version": "0.1.1",
 
   "homepage_url": "https://github.com/iudex-/NextcloudPasswordsFetcher",
   "icons": {
-    "32":"icons/icon-32.png",
-    "128":"icons/icon-128.png"
+    "32": "icons/icon-32.png",
+    "128": "icons/icon-128.png"
   },
   "browser_action": {
     "default_icon": "icons/icon-128.png"
   },
-  "background" : {
-    "scripts" : ["background.js"]
+  "background": {
+    "scripts": ["background.js"]
   },
 
   "permissions": [
