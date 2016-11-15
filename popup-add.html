@@ -11,6 +11,14 @@ input {
 	padding: 2px;
 	margin: 5px;
 }
+#genpw{
+	font-size: 9px;
+	vertical-align: top;
+}
+input[name=send]{
+	float: right;
+}
+
 </style>
 
 </head>
@@ -20,6 +28,7 @@ input {
 		<input tabindex="4" required="required" name="website" type="text" placeholder="website">
 		<input tabindex="1" required="required" name="username" type="text" placeholder="username" autofocus="autofocus">
 		<input tabindex="2" required="required" name="password" type="password" placeholder="password" >
+		<a id="genpw" href="">generate password</a>
 		<input tabindex="3" name="send" type="submit">
 	</form>
 </body>

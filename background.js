@@ -92,6 +92,8 @@ function addAcc_(website, username, pw, parse_error_counter){
 	data[website_filtered] = [username, pw];
     indicatorAction();
 	console.log("POST fetching...");
+	chrome.browserAction.setBadgeBackgroundColor({color: "#ff9c34"});
+	chrome.browserAction.setBadgeText({text:" "});
     fetch(SERVER+API_PATH, {
         credentials: 'omit', // this is the default value
         cache: 'no-store',
@@ -113,6 +115,8 @@ function addAcc_(website, username, pw, parse_error_counter){
 	        //console.log(res);
 	        res.json().then(function(resJson) {
 				console.log(resJson);
+		        chrome.browserAction.setBadgeBackgroundColor({color: "#3cd23c"});
+		        setTimeout(resetBadge,1000);
 	        }).catch(function(error) {
 		        console.log("parse error 2", error);
 		        if(parse_error_counter<30) {
@@ -123,7 +127,13 @@ function addAcc_(website, username, pw, parse_error_counter){
         }
     }).catch(function(error) {
         console.log("Network error", error);
+	    chrome.browserAction.setBadgeBackgroundColor({color: "#e31c1e"});
+	    setTimeout(resetBadge,5000);
     });
+}
+
+function resetBadge() {
+	chrome.browserAction.setBadgeText({text:""});
 }
 
 function loadData(cb) {
@@ -132,6 +142,8 @@ function loadData(cb) {
 function loadData_(cb, parse_error_count){
 	if(SERVER) {
 		console.log("GET fetching...");
+		chrome.browserAction.setBadgeBackgroundColor({color: "#ff9c34"});
+		chrome.browserAction.setBadgeText({text:" "});
 		fetch(SERVER+API_PATH, {
 			credentials: 'omit', // this is the default value
 			cache: 'no-store',
@@ -148,6 +160,8 @@ function loadData_(cb, parse_error_count){
 					data = data.filter(function(ele){return ele.deleted=="0"});
 					console.log(data);
 					data = processData(data);
+					chrome.browserAction.setBadgeBackgroundColor({color: "#3cd23c"});
+					setTimeout(resetBadge,1000);
 					if(cb!=undefined) {
 						cb();
 					}
@@ -162,6 +176,8 @@ function loadData_(cb, parse_error_count){
 			return res;
 		}).catch(function(error) {
 			console.log("Network/Auth error", error);
+			chrome.browserAction.setBadgeBackgroundColor({color: "#e31c1e"});
+			setTimeout(resetBadge,1000);
 			chrome.browserAction.setIcon({path: "icons/icon-red-32.png"});
 		});
 	} else {
