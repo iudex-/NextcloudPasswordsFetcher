@@ -48,21 +48,13 @@ function indicatorAction() {
 }
 
 function action(){
-	//chrome.tabs.executeScript(null, {code: getInsertCode("uuuuser", "ppppppppassword")});
 	getCurrentTabUrl(function(url){
 		url=url.split("/")[2];
-		if(data[url]) {
-			console.log("URL match!");
-			//chrome.browserAction.setIcon({path: "icon-green-32.png"});
+		if(data[url]) { // URL match
 			chrome.tabs.executeScript(null, {code: getInsertCode(data[url][0], data[url][1])});
-		} else {
-			console.log("NO URL match!");
-			//chrome.browserAction.setIcon({path: "icon-red-32.png"});
 		}
-		//setTimeout(function(x){chrome.browserAction.setIcon({path: "icon-32.png"});},500);
 		console.log(url);
 	});
-
 	count++;
 	//chrome.browserAction.setBadgeText({text:" "});
 	//chrome.browserAction.setBadgeBackgroundColor({color: [r(0,255),r(0,255),r(0,255),255]});
@@ -97,30 +89,27 @@ function addAcc_(website, username, pw, parse_error_counter){
     indicatorAction();
 	console.log("POST fetching...");
 	setBadge("wait");
-	chrome.browserAction.setBadgeText({text:" "});
     fetch(SERVER+API_PATH, {
         credentials: 'omit', // this is the default value
         cache: 'no-store',
         method: 'POST',
         headers: {
 	        "Content-Type": "application/json",
-            "Authorization": "Basic "+btoa(USER+":"+PASSWORD)
+            "Authorization": "Basic "+btoa(USER+":"+PASSWORD)  // base64 encode credentials
         },
-        body: 	"{\"website\":\""+website_filtered+"\"," +
-				"\"pass\":\""+pw+"\"," +
-				"\"loginname\":\""+username+"\"," +
-				"\"address\": \""+website+"\"," +
-				"\"notes\": \"\"}"
+        body: 	'{"website":"'+website_filtered+'",' +
+				'"pass":"'+pw+'",' +
+                '"loginname":"'+username+'",' +
+                '"address": "'+website+'",' +
+	            '"notes": ""}'
     }).then(function(res) {
         console.log("POST request ok?", res.ok);
         if (!res.ok) {
             throw Error(res.statusText);
         } else {
-	        //console.log(res);
 	        res.json().then(function(resJson) {
-				console.log(resJson);
-		        icindicateStatus("ok");
-		        setTimeout(resetBadge,1000);
+		        setBadge("ok");
+		        resetBadge();
 	        }).catch(function(error) {
 		        console.log("parse error 2", error);
 		        setBadge("error");
@@ -136,7 +125,7 @@ function addAcc_(website, username, pw, parse_error_counter){
     }).catch(function(error) {
         console.log("Network error", error);
 	    setBadge("error");
-	    setTimeout(resetBadge,1000);
+	    resetBadge();
         chrome.browserAction.setIcon({path: "icons/icon-red-32.png"});
     });
 }
@@ -152,8 +141,11 @@ function setBadge(s){
 	chrome.browserAction.setBadgeText({text:" "});
 }
 
-function resetBadge() {
-	chrome.browserAction.setBadgeText({text:""});
+function resetBadge(timeout) {
+	if(timeout==undefined) timeout = 2000;
+	setTimeout(function(){
+		chrome.browserAction.setBadgeText({text:""});
+	},timeout);
 }
 
 function loadData(cb) {
@@ -178,10 +170,9 @@ function loadData_(cb, parse_error_count){
 				res.json().then(function(resJson) {
 					data = resJson.filter(function(ele){return ele.creation_date!=null});
 					data = data.filter(function(ele){return ele.deleted=="0"});
-					console.log(data);
 					data = processData(data);
 					setBadge("ok");
-					setTimeout(resetBadge,1000);
+					resetBadge();
 					if(cb!=undefined) {
 						cb();
 					}
@@ -201,7 +192,7 @@ function loadData_(cb, parse_error_count){
 		}).catch(function(error) {
 			console.log("Network/Auth error", error);
 			setBadge("error");
-			setTimeout(resetBadge,1000);
+			resetBadge();
 			chrome.browserAction.setIcon({path: "icons/icon-red-32.png"});
 		});
 	} else {
