@@ -1,5 +1,7 @@
 
 var API_PATH = "/index.php/apps/passwords/api/0.1/passwords";
+var RETRY_TIME = 200; // ms
+
 var SERVER, USER, PASSWORD;
 var data;
 var count;
@@ -119,16 +121,21 @@ function addAcc_(website, username, pw, parse_error_counter){
 		        setTimeout(resetBadge,1000);
 	        }).catch(function(error) {
 		        console.log("parse error 2", error);
-		        if(parse_error_counter<30) {
-			        parse_error_counter++;
-		            addAcc_(website,username,pw,parse_error_counter);
-		        }
+                chrome.browserAction.setBadgeBackgroundColor({color: "#e31c1e"});
+                if(parse_error_count<25) {
+                    parse_error_count++;
+                    setTimeout(function(){
+                        console.log("POST retry #",parse_error_count);
+                        addAcc_(website,username,pw,parse_error_counter);
+                    },RETRY_TIME)
+                }
 	        });
         }
     }).catch(function(error) {
         console.log("Network error", error);
 	    chrome.browserAction.setBadgeBackgroundColor({color: "#e31c1e"});
-	    setTimeout(resetBadge,5000);
+	    setTimeout(resetBadge,1000);
+        chrome.browserAction.setIcon({path: "icons/icon-red-32.png"});
     });
 }
 
@@ -167,9 +174,13 @@ function loadData_(cb, parse_error_count){
 					}
 				}).catch(function(error) {
 					console.log("parse error 1", error);
-					if(parse_error_count<20) {
+                    chrome.browserAction.setBadgeBackgroundColor({color: "#e31c1e"});
+					if(parse_error_count<25) {
 						parse_error_count++;
-						loadData_(cb, parse_error_count);
+                        setTimeout(function(){
+                        		console.log("GET retry #",parse_error_count);
+                            	loadData_(cb, parse_error_count);
+                        	},RETRY_TIME)
 					}
 				});
 			}
@@ -222,42 +233,6 @@ function getInsertCode(user,pw){
 			document.querySelectorAll('"+UsernameSelectors+"').forEach(function(x){x.value='"+user+"'});	\
 			document.querySelectorAll('input[type=password]').forEach(function(x){x.value='"+pw+"'});";
 }
-/*
-var user = "hans";
-var pw = ",jjxfd,nfksfdkh";
-
-var matchUser = ["input[name=id]", "input[name=username]", "input[type=email]"];
-for(i=0;i<matchUser.length;i++){
-	matched = document.querySelectorAll(matchUser[i]);
-	console.log(matchUser[i], matched);
-	if(matched!=[]) {
-		matched.forEach(function(x){x.value=user});
-	}
-}
-document.querySelectorAll("input[type=password]").forEach(function(x){x.value=pw});
-
-try{
-	document.querySelector("button[type=submit]").click();
-} catch(e){console.log("exeption", e)}
-try{
-	document.querySelector("input[type=submit]").click()
-} catch(e){console.log("exeption", e)}
-*/
-
-/*
-document.querySelector("input[name=id]").value=123  // http://uploaded.net/file/8ezq1j3k
-document.querySelector("input[name=username]").value=123  // play.spotify.com
-document.querySelector("input[type=password]").value=123
-document.querySelector("button[type=submit]").click();
-
-google:
-document.querySelector("input[type=email]").value="foo@bar.de"
-document.querySelector("button[type=submit]").click()
-...
-document.querySelector("input[type=password]").value=123
-document.querySelector("input[type=submit]").click()
-
-*/
 
 
 function getCurrentTabUrl(callback) { // from Chromes tutorial extension
