@@ -23,7 +23,7 @@ document.forms[0].onsubmit = function(e) {
 	var password = document.querySelector("input[name=password]").value;
 	console.log("send",website,username);
 	chrome.runtime.getBackgroundPage(function(bgWindow) {
-		bgWindow.addAcc(website, username, password);
+		bgWindow.main.addAcc(website, username, password);
 		window.close();
 	});
 };

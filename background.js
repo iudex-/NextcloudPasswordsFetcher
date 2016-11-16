@@ -1,8 +1,10 @@
+main=function(){
 
 var API_PATH = "/index.php/apps/passwords/api/0.1/passwords";
-var RETRY_TIME = 200; // ms
+var RETRY_TIME = 500; // ms
+var RETRIES = 20;
 
-var SERVER, USER, PASSWORD;
+var SERVER, USER, PASSWORD; // set via setPopupData
 var data;
 var count;
 
@@ -94,7 +96,7 @@ function addAcc_(website, username, pw, parse_error_counter){
 	data[website_filtered] = [username, pw];
     indicatorAction();
 	console.log("POST fetching...");
-	chrome.browserAction.setBadgeBackgroundColor({color: "#ff9c34"});
+	setBadge("wait");
 	chrome.browserAction.setBadgeText({text:" "});
     fetch(SERVER+API_PATH, {
         credentials: 'omit', // this is the default value
@@ -117,12 +119,12 @@ function addAcc_(website, username, pw, parse_error_counter){
 	        //console.log(res);
 	        res.json().then(function(resJson) {
 				console.log(resJson);
-		        chrome.browserAction.setBadgeBackgroundColor({color: "#3cd23c"});
+		        icindicateStatus("ok");
 		        setTimeout(resetBadge,1000);
 	        }).catch(function(error) {
 		        console.log("parse error 2", error);
-                chrome.browserAction.setBadgeBackgroundColor({color: "#e31c1e"});
-                if(parse_error_count<25) {
+		        setBadge("error");
+                if(parse_error_count<RETRIES) {
                     parse_error_count++;
                     setTimeout(function(){
                         console.log("POST retry #",parse_error_count);
@@ -133,10 +135,21 @@ function addAcc_(website, username, pw, parse_error_counter){
         }
     }).catch(function(error) {
         console.log("Network error", error);
-	    chrome.browserAction.setBadgeBackgroundColor({color: "#e31c1e"});
+	    setBadge("error");
 	    setTimeout(resetBadge,1000);
         chrome.browserAction.setIcon({path: "icons/icon-red-32.png"});
     });
+}
+
+function setBadge(s){
+	var color = "";
+	switch (s) {
+		case "ok": color = "#73d216"; break;   // Tango Colors:
+		case "wait": color = "#edd400"; break; // http://tango.freedesktop.org/Tango_Icon_Theme_Guidelines
+		case "error": color = "#cc0000"; break;
+	}
+	chrome.browserAction.setBadgeText({text:" "});
+	chrome.browserAction.setBadgeBackgroundColor({color: color});
 }
 
 function resetBadge() {
@@ -149,7 +162,7 @@ function loadData(cb) {
 function loadData_(cb, parse_error_count){
 	if(SERVER) {
 		console.log("GET fetching...");
-		chrome.browserAction.setBadgeBackgroundColor({color: "#ff9c34"});
+		setBadge("wait");
 		chrome.browserAction.setBadgeText({text:" "});
 		fetch(SERVER+API_PATH, {
 			credentials: 'omit', // this is the default value
@@ -167,15 +180,15 @@ function loadData_(cb, parse_error_count){
 					data = data.filter(function(ele){return ele.deleted=="0"});
 					console.log(data);
 					data = processData(data);
-					chrome.browserAction.setBadgeBackgroundColor({color: "#3cd23c"});
+					setBadge("ok");
 					setTimeout(resetBadge,1000);
 					if(cb!=undefined) {
 						cb();
 					}
 				}).catch(function(error) {
 					console.log("parse error 1", error);
-                    chrome.browserAction.setBadgeBackgroundColor({color: "#e31c1e"});
-					if(parse_error_count<25) {
+					setBadge("error");
+					if(parse_error_count<RETRIES) {
 						parse_error_count++;
                         setTimeout(function(){
                         		console.log("GET retry #",parse_error_count);
@@ -187,7 +200,7 @@ function loadData_(cb, parse_error_count){
 			return res;
 		}).catch(function(error) {
 			console.log("Network/Auth error", error);
-			chrome.browserAction.setBadgeBackgroundColor({color: "#e31c1e"});
+			setBadge("error");
 			setTimeout(resetBadge,1000);
 			chrome.browserAction.setIcon({path: "icons/icon-red-32.png"});
 		});
@@ -273,3 +286,10 @@ function getCurrentTabUrl(callback) { // from Chromes tutorial extension
   // });
   // alert(url); // Shows "undefined", because chrome.tabs.query is async.
 }
+
+return {
+	"setPopupData" : setPopupData,
+	"addAcc" : addAcc
+}
+
+}();

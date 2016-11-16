@@ -19,7 +19,7 @@ document.forms[0].onsubmit = function(e) {
 	});
 	
 	chrome.runtime.getBackgroundPage(function(bgWindow) {
-        bgWindow.setPopupData(server,username,password);
+        bgWindow.main.setPopupData(server,username,password);
         window.close();     // Close dialog
     });
 };
