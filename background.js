@@ -148,8 +148,8 @@ function setBadge(s){
 		case "wait": color = "#edd400"; break; // http://tango.freedesktop.org/Tango_Icon_Theme_Guidelines
 		case "error": color = "#cc0000"; break;
 	}
-	chrome.browserAction.setBadgeText({text:" "});
 	chrome.browserAction.setBadgeBackgroundColor({color: color});
+	chrome.browserAction.setBadgeText({text:" "});
 }
 
 function resetBadge() {
