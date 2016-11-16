@@ -109,6 +109,7 @@ function addAcc_(website, username, pw, parse_error_counter){
         } else {
 	        res.json().then(function(resJson) {
 		        setBadge("ok");
+		        indicatorAction();
 		        resetBadge();
 	        }).catch(function(error) {
 		        console.log("parse error 2", error);
@@ -173,6 +174,7 @@ function loadData_(cb, parse_error_count){
 					data = processData(data);
 					setBadge("ok");
 					resetBadge();
+					indicatorAction();
 					if(cb!=undefined) {
 						cb();
 					}
