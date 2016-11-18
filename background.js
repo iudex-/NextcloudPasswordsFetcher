@@ -10,6 +10,7 @@ var count;
 
 if(PASSWORD==undefined) {
 	chrome.browserAction.setPopup({popup: "popup.html"});
+	chrome.browserAction.setIcon({path: "icons/icon-32.png"});
 }
 
 chrome.browserAction.onClicked.addListener(function() {
@@ -82,13 +83,20 @@ function setPopupData(server,username,password) { // calles from popup.js
 function addAcc(website,username, pw) {
 	addAcc_(website, username, pw, 0);
 }
-function addAcc_(website, username, pw, parse_error_counter){
+
+function addAcc_(website, username, pw, parse_error_count){
 	var website_filtered = website.split("/")[2];
 	console.log("addAcc called", website_filtered, username);
 	data[website_filtered] = [username, pw];
     indicatorAction();
 	console.log("POST fetching...");
 	setBadge("wait");
+	var body = '{"website":"'+website_filtered+'",' +
+		'"pass":'+JSON.stringify(pw)+',' +
+		'"loginname":'+JSON.stringify(username)+',' +
+		'"address": '+JSON.stringify(website)+',' +
+		'"notes": ""}';
+	//console.log("send data:",body);
     fetch(SERVER+API_PATH, {
         credentials: 'omit', // this is the default value
         cache: 'no-store',
@@ -97,11 +105,7 @@ function addAcc_(website, username, pw, parse_error_counter){
 	        "Content-Type": "application/json",
             "Authorization": "Basic "+btoa(USER+":"+PASSWORD)  // base64 encode credentials
         },
-        body: 	'{"website":"'+website_filtered+'",' +
-				'"pass":"'+pw+'",' +
-                '"loginname":"'+username+'",' +
-                '"address": "'+website+'",' +
-	            '"notes": ""}'
+        body: body
     }).then(function(res) {
         console.log("POST request ok?", res.ok);
         if (!res.ok) {
@@ -118,7 +122,7 @@ function addAcc_(website, username, pw, parse_error_counter){
                     parse_error_count++;
                     setTimeout(function(){
                         console.log("POST retry #",parse_error_count);
-                        addAcc_(website,username,pw,parse_error_counter);
+                        addAcc_(website,username,pw,parse_error_count);
                     },RETRY_TIME)
                 }
 	        });
@@ -234,10 +238,11 @@ function getInsertCode(user,pw){
 	var UsernameSelectors = "input[name=id], input[name=lid], input[name=username], input[name=Username], input[name=userName],	\
 						 input[name=user], input[name=email], input[name=Email], input[name=eMail], input[name=acct],		\
 						 input[type=text], input[type=email], input[name=acc], input[name=login][type=text]";
-
-	return "document.querySelector('body').style.backgroundColor='#cfc';									\
-			document.querySelectorAll('"+UsernameSelectors+"').forEach(function(x){x.value='"+user+"'});	\
-			document.querySelectorAll('input[type=password]').forEach(function(x){x.value='"+pw+"'});";
+	var u = encodeURIComponent(user);
+	var p = encodeURIComponent(pw);
+	return "document.querySelector('body').style.backgroundColor='#cfc';			                						\
+			document.querySelectorAll('"+UsernameSelectors+"').forEach(function(x){x.value=decodeURIComponent('"+u+"')});	\
+			document.querySelectorAll('input[type=password]').forEach(function(x){ x.value=decodeURIComponent('"+p+"')});";
 }
 
 
