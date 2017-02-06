@@ -5,6 +5,7 @@ var RETRY_TIME = 500; // ms
 var RETRIES = 20;
 
 var SERVER, USER, PASSWORD; // set via setPopupData
+var	options;
 var data;
 var count;
 
@@ -24,6 +25,20 @@ chrome.browserAction.onClicked.addListener(function() {
 	}
 });
 
+///////////// Options /////////////
+chrome.storage.onChanged.addListener(function(changes){
+	if(changes.options) {
+		options = changes.options.newValue;
+	}
+});
+chrome.storage.sync.get({options: {
+		matchSubdomain: true, // default values
+	}}, function(items) {
+		options = items.options;
+	}
+);
+///////////////////////////////////
+
 function indicatorListener() {
 	if(SERVER){
 		if(data==undefined){
@@ -33,11 +48,25 @@ function indicatorListener() {
 		}
 	}
 }
+
+function urlMatch(url) {
+	url=url.split("/")[2];
+	if(!options.matchSubdomain) {
+		url = url.match(/([^.]*)\.([^.]*)$/)[0]; // get domain.tld
+		Object.keys(data).some(function(x){
+			if(url==x.match(/([^.]*)\.([^.]*)$/)[0]) {  // match domain.tld
+				url = x;
+				return data[x];
+			}
+		});
+	}
+	return data[url];
+}
+
 function indicatorAction() {
 	getCurrentTabUrl(function(url){
 		if(data!=undefined) {
-			url=url.split("/")[2];
-			if(data[url]) {
+			if(urlMatch(url)) {
 				chrome.browserAction.setPopup({popup: ""});
 				chrome.browserAction.setIcon({path: "icons/icon-green-32.png"});
 			} else {
@@ -50,9 +79,9 @@ function indicatorAction() {
 
 function action(){
 	getCurrentTabUrl(function(url){
-		url=url.split("/")[2];
-		if(data[url]) { // URL match
-			chrome.tabs.executeScript(null, {code: getInsertCode(data[url][0], data[url][1])});
+		var cred = urlMatch(url);
+		if(cred) { // URL match
+			chrome.tabs.executeScript(null, {code: getInsertCode(cred[0], cred[1])});
 		}
 		console.log(url);
 	});

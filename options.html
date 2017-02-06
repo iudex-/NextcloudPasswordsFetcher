@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>NextcloudPasswordFetcher Options</title>
+<style>
+	body {
+		font-family: sans-serif;
+		background: #0082c9;
+		font-size: 16px;
+	}
+	#container {
+		margin: 100px auto;
+		width: 480px;
+		background: #fff;
+		padding: 30px 60px;
+		border-radius: 3px;
+	}
+	#head {
+		text-align: center;
+		margin: 15px auto;
+		padding: 15px;
+		border-bottom: 1px solid #ccc;
+		margin-bottom: 30px;
+		padding-bottom: 30px;
+	}
+	#head h2 {
+		background: url("icons/icon-32.png") left center no-repeat;
+		padding: 16px 0;
+		margin: 0 auto;
+		padding-left: 45px;
+		font-size: 20px;
+		display: inline;
+	}
+	#status {
+		padding: 0 15px;
+		color: #007d00;
+	}
+	#btns {
+		text-align: right;
+	}
+	input {
+		padding: 2px;
+		margin: 5px;
+	}
+	input[name=send]{
+		float: right;
+	}
+	input[type=submit] {
+		background: #0092d9;
+		padding: 10px 20px;
+		font-size: 20px;
+		margin: 5px;
+		border: 1px solid #0082c9;
+		border-radius: 3px;
+		color: #fff;
+	}
+</style>
+</head>
+<body>
+<div id="container">
+
+	<div id="head">
+		<h2>NextcloudPasswordFetcher</h2>
+	</div>
+
+	<div class="checks">
+		<input type="checkbox" id="subdomainCheck" class="option">
+		<label for="subdomainCheck" class="cbLabel">include subdomains in URL match</label>
+	</div>
+
+	<div id="btns">
+		<!-- <button id="save">Save</button> -->
+		<span id="status"></span>
+		<input type="submit" id="save" value="Save"></input>
+	</div>
+
+
+</div>
+</body>
+<script src="options.js"></script>
+</html>
