@@ -3,8 +3,8 @@
 
   "name": "NextcloudPasswordsFetcher",
 
-  "description":  "This extension can fetch passwords from your Nextcloud/Owncloud and insert them directly into logins form.",
-  "version": "0.1.3",
+  "description":  "This extension can fetch passwords from your Nextcloud/Owncloud and insert them directly into login forms.",
+  "version": "0.1.4",
 
   "options_page": "options.html",
 
